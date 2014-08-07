@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html ng-app="demo">
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <title>OpenTok-Editor Demo</title>
+        <link rel="stylesheet" href="bower_components/CodeMirror/lib/codemirror.css" type="text/css" media="screen" title="no title" charset="utf-8">        
+        <script src="bower_components/CodeMirror/lib/codemirror.js" type="text/javascript" charset="utf-8"></script>
+        <script src="bower_components/CodeMirror/mode/javascript/javascript.js" type="text/javascript" charset="utf-8"></script>
+        <script src="bower_components/CodeMirror/mode/markdown/markdown.js" type="text/javascript" charset="utf-8"></script>
+        <script src="bower_components/ot/dist/ot.js" type="text/javascript" charset="utf-8"></script>
+        <script src="bower_components/jquery/dist/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="bower_components/angular/angular.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="http://static.opentok.com/webrtc/v2.2/js/opentok.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="bower_components/opentok-angular/opentok-angular.js" type="text/javascript" charset="utf-8"></script>
+        <script src="opentok-editor.js" type="text/javascript" charset="utf-8"></script>
+        <style type="text/css" media="screen">
+            
+        </style>
+        <script type="text/javascript">
+            angular.module('demo', ['opentok', 'opentok-editor'])
+            .controller('DemoCtrl', ['$scope', 'OTSession', function ($scope, OTSession) {
+                OTSession.init('1127', '1_MX4xMTI3fn5UaHUgQXVnIDA3IDA1OjM1OjMyIFBEVCAyMDE0fjAuMzk1MTY4ODR-fg', 'T1==cGFydG5lcl9pZD0xMTI3JnNpZz0wZDU2MDBkYzEzNGYxMjIwMTMwZmQxY2U3MTQ1MzVmMTNkMWM4NTY1OmV4cGlyZV90aW1lPTE0MDk5NTY1MzImbm9uY2U9MzkyNjU2JmNyZWF0ZV90aW1lPTE0MDc0MTQ5MzImcm9sZT1tb2RlcmF0b3Imc2Vzc2lvbl9pZD0xX01YNHhNVEkzZm41VWFIVWdRWFZuSURBM0lEQTFPak0xT2pNeUlGQkVWQ0F5TURFMGZqQXVNemsxTVRZNE9EUi1mZw==');
+            }]);
+        </script>
+        <body ng-controller="DemoCtrl">
+            <ot-editor modes="['javascript', 'markdown']" value="// Write code here" mode="javascript"></ot-editor>
+        </body>
+    </head>
+</html>

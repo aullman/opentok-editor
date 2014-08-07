@@ -1,0 +1,33 @@
+{
+  "name": "opentok-editor",
+  "version": "0.0.1",
+  "description": "A real time collaborative editor for OpenTok using CodeMirror and ot.js",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aullman/opentok-editor"
+  },
+  "keywords": [
+    "opentok",
+    "editor",
+    "webrtc",
+    "operational",
+    "transform"
+  ],
+  "author": "Adam Ullman <adam@tokbox.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aullman/opentok-editor/issues"
+  },
+  "homepage": "https://github.com/aullman/opentok-editor",
+  "devDependencies": {
+    "gulp": "^3.8.7",
+    "gulp-concat": "^2.3.4",
+    "gulp-jshint": "^1.8.4",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^0.3.1"
+  }
+}
