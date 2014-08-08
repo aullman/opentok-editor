@@ -14,3 +14,8 @@ ot-editor .opentok-editor-connecting {
     position: absolute;
     top: 10%;
 }
+
+ot-editor div.opentok-editor, ot-editor .CodeMirror {
+    width: 100%;
+    height: 100%;
+}
