@@ -13,17 +13,24 @@
         <script src="http://static.opentok.com/webrtc/v2.2/js/opentok.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="bower_components/opentok-angular/opentok-angular.js" type="text/javascript" charset="utf-8"></script>
         <script src="opentok-editor.js" type="text/javascript" charset="utf-8"></script>
+        <link rel="stylesheet" href="opentok-editor.css" type="text/css" media="screen" title="no title" charset="utf-8">
         <style type="text/css" media="screen">
-            
+            ot-editor {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
         </style>
         <script type="text/javascript">
             angular.module('demo', ['opentok', 'opentok-editor'])
             .controller('DemoCtrl', ['$scope', 'OTSession', function ($scope, OTSession) {
-                OTSession.init('1127', '1_MX4xMTI3fn5UaHUgQXVnIDA3IDA1OjM1OjMyIFBEVCAyMDE0fjAuMzk1MTY4ODR-fg', 'T1==cGFydG5lcl9pZD0xMTI3JnNpZz0wZDU2MDBkYzEzNGYxMjIwMTMwZmQxY2U3MTQ1MzVmMTNkMWM4NTY1OmV4cGlyZV90aW1lPTE0MDk5NTY1MzImbm9uY2U9MzkyNjU2JmNyZWF0ZV90aW1lPTE0MDc0MTQ5MzImcm9sZT1tb2RlcmF0b3Imc2Vzc2lvbl9pZD0xX01YNHhNVEkzZm41VWFIVWdRWFZuSURBM0lEQTFPak0xT2pNeUlGQkVWQ0F5TURFMGZqQXVNemsxTVRZNE9EUi1mZw==');
+                OTSession.init('YOUR_API_KEY', 'YOUR_SESSION_ID', 'YOUR_TOKEN');
             }]);
         </script>
         <body ng-controller="DemoCtrl">
-            <ot-editor modes="['javascript', 'markdown']" value="// Write code here" mode="javascript"></ot-editor>
+            <ot-editor modes="[{name: 'Javascript', value: 'javascript'}, {name: 'Markdown', value: 'markdown'}]" value="// Write code here" mode="javascript"></ot-editor>
         </body>
     </head>
 </html>
