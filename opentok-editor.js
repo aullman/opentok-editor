@@ -65,28 +65,37 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
 .directive('otEditor', ['OTSession', '$window', function (OTSession, $window) {
   return {
     restrict: 'E',
-    template: '<div ng-if="connecting">Connecting...</div>' +
-      '<div ng-show="!connecting"><div class="opentok-editor"></div></div>',
+    scope: {
+        modes: '='
+    },
+    template: '<div class="opentok-editor-mode-select" ng-show="!connecting">Language:' +
+      '<select ng-model="selectedMode" name="modes" ng-options="mode.name for mode in modes"></select>' +
+      '</div>' +
+      '<div ng-if="connecting" class="opentok-editor-connecting">Connecting...</div>' +
+      '<div><div class="opentok-editor"></div></div>',
     link: function (scope, element, attrs) {
-      var opentokEditor = element.context.querySelector("div.opentok-editor"),
+      var opentokEditor = element.context.querySelector('div.opentok-editor'),
+          modeSelect = element.context.querySelector('select'),
           myCodeMirror,
           cmClient,
           doc,
           session = OTSession.session;
       scope.connecting = true;
+      var selectedMode = scope.modes.filter(function (value) {return value.value === attrs.mode;});
+      scope.selectedMode = selectedMode.length > 0 ? selectedMode[0] : scope.modes[0];
 
       var createEditorClient = function(revision, clients) {
           if (!cmClient) {
-              cmClient = new ot.EditorClient(
-                revision,
-                clients,
-                new OpenTokAdapter(session),
-                new ot.CodeMirrorAdapter(myCodeMirror)
-              );
+            cmClient = new ot.EditorClient(
+              revision,
+              clients,
+              new OpenTokAdapter(session),
+              new ot.CodeMirrorAdapter(myCodeMirror)
+            );
+            scope.$apply(function () {
+              scope.connecting = false;
+            });
           }
-          scope.$apply(function () {
-            scope.connecting = false;
-          });
       };
 
       var sessionConnected = function () {
@@ -131,7 +140,11 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
         sessionConnected();
       }
       
-      // myCodeMirror.setOption("mode", "javascript");
+      scope.$watch('selectedMode', function () {
+        if (myCodeMirror) {
+          myCodeMirror.setOption("mode", scope.selectedMode.value);
+        }
+      });
     }
   };
 }]);
