@@ -72,7 +72,7 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
       '<select ng-model="selectedMode" name="modes" ng-options="mode.name for mode in modes"></select>' +
       '</div>' +
       '<div ng-if="connecting" class="opentok-editor-connecting">Connecting...</div>' +
-      '<div><div class="opentok-editor"></div></div>',
+      '<div ng-show="!connecting"><div class="opentok-editor"></div></div>',
     link: function (scope, element, attrs) {
       var opentokEditor = element.context.querySelector('div.opentok-editor'),
           modeSelect = element.context.querySelector('select'),
@@ -95,6 +95,9 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
             );
             scope.$apply(function () {
               scope.connecting = false;
+              setTimeout(function () {
+                myCodeMirror.refresh();
+              }, 1000);
             });
           }
       };
@@ -126,16 +129,14 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
         },
         connectionCreated: function (event) {
           if (cmClient && event.connection.connectionId !== session.connection.connectionId) {
-            var state = {
-              revision: cmClient.revision,
-              clients: [],
-              str: myCodeMirror.getValue()
-            };
-            console.log('state: ', state);
             session.signal({
               type: 'opentok-editor-doc',
               to: event.connection,
-              data: JSON.stringify(state)
+              data: JSON.stringify({
+                revision: cmClient.revision,
+                clients: [],
+                str: myCodeMirror.getValue()
+              })
             });
           }
         },
