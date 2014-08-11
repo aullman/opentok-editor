@@ -1,6 +1,6 @@
 {
   "name": "opentok-editor",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "authors": [
     "Adam Ullman <adam@tokbox.com>"
   ],
@@ -21,8 +21,10 @@
     "tests"
   ],
   "dependencies": {
-    "ot": "~0.0.14",
     "CodeMirror": "https://github.com/marijnh/CodeMirror.git#~4.3.0",
     "opentok-angular": "~0.2.3"
+  },
+  "devDependencies": {
+    "ot": "~0.0.14"
   }
 }
