@@ -109,6 +109,21 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
           createEditorClient(doc.revision, doc.clients);
         }
       };
+      
+      var signalDocState = function (to) {
+        var signal = {
+          type: 'opentok-editor-doc',
+          data: JSON.stringify({
+            revision: cmClient.revision,
+            clients: [],
+            str: myCodeMirror.getValue()
+          })
+        };
+        if (to) {
+          signal.to = to;
+        }
+        session.signal(signal);
+      };
 
       var sessionConnected = function () {
         myCodeMirror = CodeMirror(opentokEditor, attrs);
@@ -118,7 +133,12 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
           setTimeout(function () {
               // We wait 2 seconds for other clients to send us the doc before
               // initialising it to empty
-              createEditorClient(0, []);
+              if (!initialised) {
+                initialised = true;
+                createEditorClient(0, []);
+                // Tell anyone that joined after us that we are initialising it
+                signalDocState();
+              }
           }, 10000);
         }
       };
@@ -129,15 +149,7 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
         },
         connectionCreated: function (event) {
           if (cmClient && event.connection.connectionId !== session.connection.connectionId) {
-            session.signal({
-              type: 'opentok-editor-doc',
-              to: event.connection,
-              data: JSON.stringify({
-                revision: cmClient.revision,
-                clients: [],
-                str: myCodeMirror.getValue()
-              })
-            });
+            signalDocState(event.connection);
           }
         },
         'signal:opentok-editor-doc': function (event) {
