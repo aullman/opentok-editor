@@ -155,6 +155,10 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
           myCodeMirror.setOption("mode", scope.selectedMode.value);
         }
       });
+      
+      scope.$on('otEditorRefresh', function () {
+        myCodeMirror.refresh();
+      });
     }
   };
 }]);
