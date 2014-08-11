@@ -64,29 +64,29 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
 
       var sessionConnected = function () {
         myCodeMirror = CodeMirror(opentokEditor, attrs);
-        if (doc) {
-          initialiseDoc();
-        } else {
-          setTimeout(function () {
-              // We wait 2 seconds for other clients to send us the doc before
-              // initialising it to empty
-              if (!initialised) {
-                initialised = true;
-                createEditorClient(0, []);
-                // Tell anyone that joined after us that we are initialising it
-                signalDocState();
-              }
-          }, 10000);
-        }
+        session.signal({
+          type: 'opentok-editor-request-doc'
+        });
+
+        setTimeout(function () {
+            // We wait 2 seconds for other clients to send us the doc before
+            // initialising it to empty
+            if (!initialised) {
+              initialised = true;
+              createEditorClient(0, []);
+              // Tell anyone that joined after us that we are initialising it
+              signalDocState();
+            }
+        }, 10000);
       };
 
       session.on({
         sessionConnected: function (event) {
           sessionConnected();
         },
-        connectionCreated: function (event) {
-          if (cmClient && event.connection.connectionId !== session.connection.connectionId) {
-            signalDocState(event.connection);
+        'signal:opentok-editor-request-doc': function (event) {
+          if (cmClient && event.from.connectionId !== session.connection.connectionId) {
+            signalDocState(event.from);
           }
         },
         'signal:opentok-editor-doc': function (event) {

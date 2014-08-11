@@ -1,6 +1,6 @@
 {
   "name": "opentok-editor",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A real time collaborative editor for OpenTok using CodeMirror and ot.js",
   "main": "gulpfile.js",
   "scripts": {
