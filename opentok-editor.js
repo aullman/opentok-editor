@@ -1871,6 +1871,8 @@ var OpenTokAdapter = (function () {
   'use strict';
 
   function OpenTokAdapter (session) {
+    OT.$.eventing(this);
+    this.registerCallbacks = this.on;
     this.session = session;
     this.session.on({
       connectionDestroyed: function (event) {
@@ -1917,16 +1919,6 @@ var OpenTokAdapter = (function () {
     });
   };
 
-  OpenTokAdapter.prototype.registerCallbacks = function (cb) {
-    this.callbacks = cb;
-  };
-
-  OpenTokAdapter.prototype.trigger = function (event) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    var action = this.callbacks && this.callbacks[event];
-    if (action) { action.apply(this, args); }
-  };
-
   return OpenTokAdapter;
 
 }());
@@ -1956,10 +1948,14 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
 
       var createEditorClient = function(revision, clients) {
           if (!cmClient) {
+            var adapter =  new OpenTokAdapter(session);
+            adapter.registerCallbacks('operation', function () {
+              scope.$emit('otEditorUpdate');
+            });
             cmClient = new ot.EditorClient(
               revision,
               clients,
-              new OpenTokAdapter(session),
+              adapter,
               new ot.CodeMirrorAdapter(myCodeMirror)
             );
             scope.$apply(function () {
@@ -1974,7 +1970,10 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
       var initialiseDoc = function () {
         if (myCodeMirror && !initialised) {
           initialised = true;
-          myCodeMirror.setValue(doc.str);
+          if (myCodeMirror.getValue() !== doc.str) {
+            myCodeMirror.setValue(doc.str);
+            scope.$emit('otEditorUpdate');
+          }
           createEditorClient(doc.revision, doc.clients);
         }
       };

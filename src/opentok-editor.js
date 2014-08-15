@@ -24,10 +24,14 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
 
       var createEditorClient = function(revision, clients) {
           if (!cmClient) {
+            var adapter =  new OpenTokAdapter(session);
+            adapter.registerCallbacks('operation', function () {
+              scope.$emit('otEditorUpdate');
+            });
             cmClient = new ot.EditorClient(
               revision,
               clients,
-              new OpenTokAdapter(session),
+              adapter,
               new ot.CodeMirrorAdapter(myCodeMirror)
             );
             scope.$apply(function () {
@@ -42,7 +46,10 @@ var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
       var initialiseDoc = function () {
         if (myCodeMirror && !initialised) {
           initialised = true;
-          myCodeMirror.setValue(doc.str);
+          if (myCodeMirror.getValue() !== doc.str) {
+            myCodeMirror.setValue(doc.str);
+            scope.$emit('otEditorUpdate');
+          }
           createEditorClient(doc.revision, doc.clients);
         }
       };

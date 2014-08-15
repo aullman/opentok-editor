@@ -2,6 +2,8 @@ var OpenTokAdapter = (function () {
   'use strict';
 
   function OpenTokAdapter (session) {
+    OT.$.eventing(this);
+    this.registerCallbacks = this.on;
     this.session = session;
     this.session.on({
       connectionDestroyed: function (event) {
@@ -46,16 +48,6 @@ var OpenTokAdapter = (function () {
       type: 'cursor',
       data: JSON.stringify(cursor)
     });
-  };
-
-  OpenTokAdapter.prototype.registerCallbacks = function (cb) {
-    this.callbacks = cb;
-  };
-
-  OpenTokAdapter.prototype.trigger = function (event) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    var action = this.callbacks && this.callbacks[event];
-    if (action) { action.apply(this, args); }
   };
 
   return OpenTokAdapter;
