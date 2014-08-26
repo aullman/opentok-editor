@@ -1867,13 +1867,71 @@ ot.EditorClient = (function () {
   return EditorClient;
 }());
 
+if (typeof ot === 'undefined') {
+  var ot = {};
+}
+
+ot.Server = (function (global) {
+  'use strict';
+
+  // Constructor. Takes the current document as a string and optionally the array
+  // of all operations.
+  function Server (document, operations) {
+    this.document = document;
+    this.operations = operations || [];
+  }
+
+  // Call this method whenever you receive an operation from a client.
+  Server.prototype.receiveOperation = function (revision, operation) {
+    if (revision < 0 || this.operations.length < revision) {
+      throw new Error("operation revision not in history");
+    }
+    // Find all operations that the client didn't know of when it sent the
+    // operation ...
+    var concurrentOperations = this.operations.slice(revision);
+
+    // ... and transform the operation against all these operations ...
+    var transform = operation.constructor.transform;
+    for (var i = 0; i < concurrentOperations.length; i++) {
+      operation = transform(operation, concurrentOperations[i])[0];
+    }
+
+    // ... and apply that on the document.
+    this.document = operation.apply(this.document);
+    // Store operation in history.
+    this.operations.push(operation);
+
+    // It's the caller's responsibility to send the operation to all connected
+    // clients and an acknowledgement to the creator.
+    return operation;
+  };
+
+  return Server;
+
+}(this));
+
+if (typeof module === 'object') {
+  module.exports = ot.Server;
+}
 var OpenTokAdapter = (function () {
   'use strict';
 
-  function OpenTokAdapter (session) {
+  function OpenTokAdapter (session, revision, doc, operations) {
     OT.$.eventing(this);
     this.registerCallbacks = this.on;
     this.session = session;
+
+    if (operations && revision > operations.length) {
+      // the operations have been truncated fill in the beginning with empty space
+      var filler = [];
+      filler[revision - operations.length - 1] = null;
+      this.operations = filler.concat(operations);
+    } else {
+      this.operations = operations ? operations : [];
+    }
+    // We pretend to be a server
+    var server = new ot.Server(doc, this.operations);
+    
     this.session.on({
       connectionDestroyed: function (event) {
         this.trigger('client_left', event.connection.connectionId);
@@ -1884,13 +1942,25 @@ var OpenTokAdapter = (function () {
         }
       },
       'signal:opentok-editor-operation': function (event) {
-        if (event.from.connectionId === this.session.connection.connectionId) return;
-        var data = JSON.parse(event.data);
-        this.trigger('operation', data.operation);
-        this.trigger('cursor', event.from.connectionId, data.cursor);
+        var data = JSON.parse(event.data),
+          wrapped;
+          wrapped = new ot.WrappedOperation(
+            ot.TextOperation.fromJSON(data.operation),
+            data.cursor && ot.Cursor.fromJSON(data.cursor)
+          );
+          // Might need to try catch here and if it fails wait a little while and
+          // try again. This way if we receive operations out of order we might
+          // be able to recover
+          var wrappedPrime = server.receiveOperation(data.revision, wrapped);
+          console.log("new operation: " + wrapped);
+          if (event.from.connectionId === session.connection.connectionId) {
+            this.trigger('ack');
+          } else {
+            this.trigger('operation', wrappedPrime.wrapped.toJSON());
+            this.trigger('cursor', event.from.connectionId, wrappedPrime.meta);
+          }
       },
       'signal:opentok-editor-cursor': function (event) {
-        if (event.from.connectionId === this.session.connection.connectionId) return;
         var cursor = JSON.parse(event.data);
         this.trigger('cursor', event.from.connectionId, cursor);
       }
@@ -1906,9 +1976,7 @@ var OpenTokAdapter = (function () {
         cursor: cursor
       })
     }, (function (err) {
-      if (!err) {
-        this.trigger('ack');
-      }
+      if (err) console.error('Error sending operation', err);
     }).bind(this));
   };
 
@@ -1922,123 +1990,152 @@ var OpenTokAdapter = (function () {
   return OpenTokAdapter;
 
 }());
-var OpenTokEditor = angular.module('opentok-editor', ['opentok'])
-.directive('otEditor', ['OTSession', '$window', function (OTSession, $window) {
-  return {
-    restrict: 'E',
-    scope: {
-        modes: '='
-    },
-    template: '<div class="opentok-editor-mode-select" ng-show="!connecting">' +
-      '<select ng-model="selectedMode" name="modes" ng-options="mode.name for mode in modes"></select>' +
-      '</div>' +
-      '<div ng-if="connecting" class="opentok-editor-connecting">Connecting...</div>' +
-      '<div ng-show="!connecting"><div class="opentok-editor"></div></div>',
-    link: function (scope, element, attrs) {
-      var opentokEditor = element.context.querySelector('div.opentok-editor'),
-          modeSelect = element.context.querySelector('select'),
-          myCodeMirror,
-          cmClient,
-          doc,
-          initialised = false,
-          session = OTSession.session;
-      scope.connecting = true;
-      var selectedMode = scope.modes.filter(function (value) {return value.value === attrs.mode;});
-      scope.selectedMode = selectedMode.length > 0 ? selectedMode[0] : scope.modes[0];
-
-      var createEditorClient = function(revision, clients) {
-          if (!cmClient) {
-            var adapter =  new OpenTokAdapter(session);
-            adapter.registerCallbacks('operation', function () {
-              scope.$emit('otEditorUpdate');
-            });
-            cmClient = new ot.EditorClient(
-              revision,
-              clients,
-              adapter,
-              new ot.CodeMirrorAdapter(myCodeMirror)
-            );
-            scope.$apply(function () {
-              scope.connecting = false;
-              setTimeout(function () {
-                myCodeMirror.refresh();
-              }, 1000);
-            });
-          }
+(function () {
+  // Turns the Array of operation Objects into an Array of JSON stringifyable objects
+  var serialiseOps = function (operations) {
+    return operations.map(function (op) {
+      return {
+        operation: op.wrapped.toJSON()
       };
-      
-      var initialiseDoc = function () {
-        if (myCodeMirror && !initialised) {
-          initialised = true;
-          if (myCodeMirror.getValue() !== doc.str) {
-            myCodeMirror.setValue(doc.str);
-            scope.$emit('otEditorUpdate');
-          }
-          createEditorClient(doc.revision, doc.clients);
-        }
-      };
-      
-      var signalDocState = function (to) {
-        var signal = {
-          type: 'opentok-editor-doc',
-          data: JSON.stringify({
-            revision: cmClient.revision,
-            clients: [],
-            str: myCodeMirror.getValue()
-          })
-        };
-        if (to) {
-          signal.to = to;
-        }
-        session.signal(signal);
-      };
-
-      var sessionConnected = function () {
-        myCodeMirror = CodeMirror(opentokEditor, attrs);
-        session.signal({
-          type: 'opentok-editor-request-doc'
-        });
-
-        setTimeout(function () {
-            // We wait 2 seconds for other clients to send us the doc before
-            // initialising it to empty
-            if (!initialised) {
-              initialised = true;
-              createEditorClient(0, []);
-              // Tell anyone that joined after us that we are initialising it
-              signalDocState();
-            }
-        }, 10000);
-      };
-
-      session.on({
-        sessionConnected: function (event) {
-          sessionConnected();
-        },
-        'signal:opentok-editor-request-doc': function (event) {
-          if (cmClient && event.from.connectionId !== session.connection.connectionId) {
-            signalDocState(event.from);
-          }
-        },
-        'signal:opentok-editor-doc': function (event) {
-          doc = JSON.parse(event.data);
-          initialiseDoc();
-        }
-      });
-      
-      if (session.isConnected()) {
-        sessionConnected();
-      }
-      
-      scope.$watch('selectedMode', function () {
-        if (myCodeMirror) {
-          myCodeMirror.setOption("mode", scope.selectedMode.value);
-        }
-      });
-      
-      scope.$on('otEditorRefresh', function () {
-        myCodeMirror.refresh();
-      });
-    }
+    });
   };
-}]);
+
+  // Turns the JSON form of the Array of operations into ot.TextOperations
+  var deserialiseOps = function (operations) {
+    return operations.map(function (op) {
+      return new ot.WrappedOperation(
+              ot.TextOperation.fromJSON(op.operation),
+              op.cursor && ot.Cursor.fromJSON(op.cursor)
+            );
+    });
+  };
+
+  angular.module('opentok-editor', ['opentok'])
+  .directive('otEditor', ['OTSession', '$window', function (OTSession, $window) {
+    return {
+      restrict: 'E',
+      scope: {
+          modes: '='
+      },
+      template: '<div class="opentok-editor-mode-select" ng-show="!connecting">' +
+        '<select ng-model="selectedMode" name="modes" ng-options="mode.name for mode in modes"></select>' +
+        '</div>' +
+        '<div ng-if="connecting" class="opentok-editor-connecting">Connecting...</div>' +
+        '<div ng-show="!connecting"><div class="opentok-editor"></div></div>',
+      link: function (scope, element, attrs) {
+        var opentokEditor = element.context.querySelector('div.opentok-editor'),
+            modeSelect = element.context.querySelector('select'),
+            myCodeMirror,
+            cmClient,
+            doc,
+            initialised = false,
+            session = OTSession.session,
+            otAdapter;
+        scope.connecting = true;
+        var selectedMode = scope.modes.filter(function (value) {return value.value === attrs.mode;});
+        scope.selectedMode = selectedMode.length > 0 ? selectedMode[0] : scope.modes[0];
+
+        var createEditorClient = function(revision, clients, doc, operations) {
+            if (!cmClient) {
+              otAdapter =  new OpenTokAdapter(session, revision, doc, operations);
+              otAdapter.registerCallbacks('operation', function () {
+                scope.$emit('otEditorUpdate');
+              });
+              cmClient = new ot.EditorClient(
+                revision,
+                clients,
+                otAdapter,
+                new ot.CodeMirrorAdapter(myCodeMirror)
+              );
+              scope.$apply(function () {
+                scope.connecting = false;
+                setTimeout(function () {
+                  myCodeMirror.refresh();
+                }, 1000);
+              });
+            }
+        };
+      
+        var initialiseDoc = function () {
+          if (myCodeMirror && !initialised) {
+            initialised = true;
+            if (myCodeMirror.getValue() !== doc.str) {
+              myCodeMirror.setValue(doc.str);
+              scope.$emit('otEditorUpdate');
+            }
+            createEditorClient(doc.revision, doc.clients, doc.str, deserialiseOps(doc.operations));
+          }
+        };
+      
+        var signalDocState = function (to) {
+          var operations = otAdapter && otAdapter.operations ? serialiseOps(otAdapter.operations): [];
+          // We only want the most recent 50 because we can't send too much data
+          if (operations.length > 50) {
+            operations = operations.slice(operations.length - 50);
+          }
+          var signal = {
+            type: 'opentok-editor-doc',
+            data: JSON.stringify({
+              revision: cmClient.revision,
+              clients: [],
+              str: myCodeMirror.getValue(),
+              operations: operations
+            })
+          };
+          if (to) {
+            signal.to = to;
+          }
+          session.signal(signal);
+        };
+
+        var sessionConnected = function () {
+          myCodeMirror = CodeMirror(opentokEditor, attrs);
+          session.signal({
+            type: 'opentok-editor-request-doc'
+          });
+
+          setTimeout(function () {
+              // We wait 2 seconds for other clients to send us the doc before
+              // initialising it to empty
+              if (!initialised) {
+                initialised = true;
+                createEditorClient(0, [], myCodeMirror.getValue());
+                // Tell anyone that joined after us that we are initialising it
+                signalDocState();
+              }
+          }, 10000);
+        };
+
+        session.on({
+          sessionConnected: function (event) {
+            sessionConnected();
+          },
+          'signal:opentok-editor-request-doc': function (event) {
+            if (cmClient && event.from.connectionId !== session.connection.connectionId) {
+              signalDocState(event.from);
+            }
+          },
+          'signal:opentok-editor-doc': function (event) {
+            doc = JSON.parse(event.data);
+            initialiseDoc();
+          }
+        });
+      
+        if (session.isConnected()) {
+          sessionConnected();
+        }
+      
+        scope.$watch('selectedMode', function () {
+          if (myCodeMirror) {
+            myCodeMirror.setOption("mode", scope.selectedMode.value);
+          }
+        });
+      
+        scope.$on('otEditorRefresh', function () {
+          myCodeMirror.refresh();
+        });
+      }
+    };
+  }]);
+  
+})();

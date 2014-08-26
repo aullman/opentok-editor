@@ -1,10 +1,22 @@
 var OpenTokAdapter = (function () {
   'use strict';
 
-  function OpenTokAdapter (session) {
+  function OpenTokAdapter (session, revision, doc, operations) {
     OT.$.eventing(this);
     this.registerCallbacks = this.on;
     this.session = session;
+
+    if (operations && revision > operations.length) {
+      // the operations have been truncated fill in the beginning with empty space
+      var filler = [];
+      filler[revision - operations.length - 1] = null;
+      this.operations = filler.concat(operations);
+    } else {
+      this.operations = operations ? operations : [];
+    }
+    // We pretend to be a server
+    var server = new ot.Server(doc, this.operations);
+    
     this.session.on({
       connectionDestroyed: function (event) {
         this.trigger('client_left', event.connection.connectionId);
@@ -15,13 +27,25 @@ var OpenTokAdapter = (function () {
         }
       },
       'signal:opentok-editor-operation': function (event) {
-        if (event.from.connectionId === this.session.connection.connectionId) return;
-        var data = JSON.parse(event.data);
-        this.trigger('operation', data.operation);
-        this.trigger('cursor', event.from.connectionId, data.cursor);
+        var data = JSON.parse(event.data),
+          wrapped;
+          wrapped = new ot.WrappedOperation(
+            ot.TextOperation.fromJSON(data.operation),
+            data.cursor && ot.Cursor.fromJSON(data.cursor)
+          );
+          // Might need to try catch here and if it fails wait a little while and
+          // try again. This way if we receive operations out of order we might
+          // be able to recover
+          var wrappedPrime = server.receiveOperation(data.revision, wrapped);
+          console.log("new operation: " + wrapped);
+          if (event.from.connectionId === session.connection.connectionId) {
+            this.trigger('ack');
+          } else {
+            this.trigger('operation', wrappedPrime.wrapped.toJSON());
+            this.trigger('cursor', event.from.connectionId, wrappedPrime.meta);
+          }
       },
       'signal:opentok-editor-cursor': function (event) {
-        if (event.from.connectionId === this.session.connection.connectionId) return;
         var cursor = JSON.parse(event.data);
         this.trigger('cursor', event.from.connectionId, cursor);
       }
@@ -37,9 +61,7 @@ var OpenTokAdapter = (function () {
         cursor: cursor
       })
     }, (function (err) {
-      if (!err) {
-        this.trigger('ack');
-      }
+      if (err) console.error('Error sending operation', err);
     }).bind(this));
   };
 

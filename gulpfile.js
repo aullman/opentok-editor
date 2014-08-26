@@ -5,7 +5,7 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify');
 
 gulp.task('default', function(){
-    gulp.src(['bower_components/ot/dist/ot.js', 'src/*.js'])
+    gulp.src(['bower_components/ot/dist/ot.js', 'bower_components/ot/lib/server.js', 'src/*.js'])
         .pipe(jshint())
         .pipe(concat('opentok-editor.js'))
         .pipe(gulp.dest('./'))
