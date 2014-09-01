@@ -8,7 +8,7 @@ You can either use [Bower](http://bower.io/):
 
 `bower install opentok-editor`
 
-or clone this repo.
+or clone this repo and include the `opentok-editor.js` or `opentok-editor.min.js` file.
 
 ## Usage
 
@@ -20,6 +20,6 @@ Keep all custom changes to the `src/` files and then run:
 
 ```
 npm install
-bower install
-gulp
 ```
+
+Which will install all bower components and run the gulp build to build the `opentok-editor.js` and `opentok-editor.min.js` files.

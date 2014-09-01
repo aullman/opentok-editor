@@ -4,7 +4,9 @@
   "description": "A real time collaborative editor for OpenTok using CodeMirror and ot.js",
   "main": "gulpfile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node node_modules/karma/bin/karma start karma.conf.js",
+    "postinstall": "./node_modules/gulp/bin/gulp.js",
+    "test-single-run": "node node_modules/karma/bin/karma start karma.conf.js  --single-run"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
   "homepage": "https://github.com/aullman/opentok-editor",
   "devDependencies": {
     "gulp": "^3.8.7",
+    "gulp-bower": "0.0.6",
     "gulp-concat": "^2.3.4",
     "gulp-jshint": "^1.8.4",
     "gulp-rename": "^1.2.0",
@@ -32,9 +35,5 @@
     "karma": "^0.12.22",
     "karma-chrome-launcher": "^0.1.4",
     "karma-jasmine": "~0.2.0"
-  },
-  "scripts": {
-    "test": "node node_modules/karma/bin/karma start karma.conf.js",
-    "test-single-run": "node node_modules/karma/bin/karma start karma.conf.js  --single-run"
   }
 }
