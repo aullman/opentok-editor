@@ -32,5 +32,9 @@
     "karma": "^0.12.22",
     "karma-chrome-launcher": "^0.1.4",
     "karma-jasmine": "~0.2.0"
+  },
+  "scripts": {
+    "test": "node node_modules/karma/bin/karma start karma.conf.js",
+    "test-single-run": "node node_modules/karma/bin/karma start karma.conf.js  --single-run"
   }
 }
