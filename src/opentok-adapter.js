@@ -67,7 +67,7 @@ var OpenTokAdapter = (function () {
 
   OpenTokAdapter.prototype.sendCursor = function (cursor) {
     this.session.signal({
-      type: 'cursor',
+      type: 'opentok-editor-cursor',
       data: JSON.stringify(cursor)
     });
   };

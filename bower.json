@@ -1,6 +1,6 @@
 {
   "name": "opentok-editor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "authors": [
     "Adam Ullman <adam@tokbox.com>"
   ],
@@ -25,6 +25,7 @@
     "opentok-angular": "~0.2.3"
   },
   "devDependencies": {
-    "ot": "~0.0.14"
+    "ot": "~0.0.14",
+    "angular-mocks": "~1.2.23"
   }
 }
