@@ -1975,9 +1975,9 @@ var OpenTokAdapter = (function () {
         operation: operation,
         cursor: cursor
       })
-    }, (function (err) {
+    }, function (err) {
       if (err) console.error('Error sending operation', err);
-    }).bind(this));
+    });
   };
 
   OpenTokAdapter.prototype.sendCursor = function (cursor) {
