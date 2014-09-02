@@ -5,8 +5,11 @@ var gulp = require('gulp'),
     concat = require('gulp-concat'),
     uglify = require('gulp-uglify');
 
-gulp.task('default', function(){
-    bower();
+gulp.task('bower', function () {
+    return bower();
+});
+
+gulp.task('default', ['bower'], function() {
     gulp.src(['bower_components/ot/dist/ot.js', 'bower_components/ot/lib/server.js', 'src/*.js'])
         .pipe(jshint())
         .pipe(concat('opentok-editor.js'))
