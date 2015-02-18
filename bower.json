@@ -25,7 +25,7 @@
     "opentok-angular": "~0.2.3"
   },
   "devDependencies": {
-    "ot": "~0.0.14",
+    "ot": "0.0.14",
     "angular-mocks": "~1.2.23"
   }
 }
