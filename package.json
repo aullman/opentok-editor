@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/aullman/opentok-editor",
   "devDependencies": {
+    "codeclimate-test-reporter": "0.0.4",
     "gulp": "^3.8.7",
     "gulp-bower": "0.0.6",
     "gulp-concat": "^2.3.4",
