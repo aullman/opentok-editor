@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/aullman/opentok-editor.svg?branch=master)](https://travis-ci.org/aullman/opentok-editor)
+[![Code Climate](https://codeclimate.com/github/aullman/opentok-editor/badges/gpa.svg)](https://codeclimate.com/github/aullman/opentok-editor)
+[![Test Coverage](https://codeclimate.com/github/aullman/opentok-editor/badges/coverage.svg)](https://codeclimate.com/github/aullman/opentok-editor)
 
 # opentok-editor
 
