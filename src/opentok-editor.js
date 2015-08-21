@@ -29,7 +29,7 @@
         '<select ng-model="selectedMode" name="modes" ng-options="mode.name for mode in modes"></select>' +
         '</div>' +
         '<div ng-if="connecting" class="opentok-editor-connecting">Connecting...</div>' +
-        '<div ng-show="!connecting"><div class="opentok-editor"></div></div>',
+        '<div ng-show="!connecting" class="opentok-editor-connected"><div class="opentok-editor"></div></div>',
       link: function (scope, element, attrs) {
         var opentokEditor = element.context.querySelector('div.opentok-editor'),
             modeSelect = element.context.querySelector('select'),
@@ -63,7 +63,7 @@
               });
             }
         };
-      
+
         var initialiseDoc = function () {
           if (myCodeMirror && !initialised) {
             initialised = true;
@@ -74,7 +74,7 @@
             createEditorClient(doc.revision, doc.clients, doc.str, deserialiseOps(doc.operations));
           }
         };
-      
+
         var signalDocState = function (to) {
           var operations = otAdapter && otAdapter.operations ? serialiseOps(otAdapter.operations): [];
           // We only want the most recent 50 because we can't send too much data
@@ -128,22 +128,22 @@
             initialiseDoc();
           }
         });
-      
+
         if (session.isConnected()) {
           sessionConnected();
         }
-      
+
         scope.$watch('selectedMode', function () {
           if (myCodeMirror) {
             myCodeMirror.setOption("mode", scope.selectedMode.value);
           }
         });
-      
+
         scope.$on('otEditorRefresh', function () {
           myCodeMirror.refresh();
         });
       }
     };
   }]);
-  
+
 })();

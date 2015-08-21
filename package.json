@@ -1,8 +1,8 @@
 {
   "name": "opentok-editor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A real time collaborative editor for OpenTok using CodeMirror and ot.js",
-  "main": "gulpfile.js",
+  "main": "opentok-editor.js",
   "scripts": {
     "test": "node node_modules/karma/bin/karma start karma.conf.js --single-run --browsers Firefox",
     "postinstall": "./node_modules/gulp/bin/gulp.js"
