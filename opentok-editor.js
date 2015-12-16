@@ -1057,7 +1057,7 @@ ot.CodeMirrorAdapter = (function (global) {
     bind(this, 'onFocus');
     bind(this, 'onBlur');
 
-    if (global.CodeMirror && /^4\./.test(global.CodeMirror.version)) {
+    if (global.CodeMirror && parseInt(CodeMirror.version) >= 4) {
       cm.on('changes', this.onChange);
     } else {
       cm.on('change', this.onChange);
