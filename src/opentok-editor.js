@@ -13,7 +13,7 @@
     return operations.map(function (op) {
       return new ot.WrappedOperation(
               ot.TextOperation.fromJSON(op.operation),
-              op.cursor && ot.Cursor.fromJSON(op.cursor)
+              op.cursor && ot.Selection.fromJSON(op.cursor)
             );
     });
   };

@@ -16,7 +16,7 @@ var OpenTokAdapter = (function () {
     }
     // We pretend to be a server
     var server = new ot.Server(doc, this.operations);
-    
+
     this.session.on({
       connectionDestroyed: function (event) {
         this.trigger('client_left', event.connection.connectionId);
@@ -31,7 +31,7 @@ var OpenTokAdapter = (function () {
           wrapped;
           wrapped = new ot.WrappedOperation(
             ot.TextOperation.fromJSON(data.operation),
-            data.cursor && ot.Cursor.fromJSON(data.cursor)
+            data.selection && ot.Selection.fromJSON(data.selection)
           );
           // Might need to try catch here and if it fails wait a little while and
           // try again. This way if we receive operations out of order we might
@@ -54,7 +54,7 @@ var OpenTokAdapter = (function () {
 
   OpenTokAdapter.prototype.sendOperation = function (revision, operation, cursor) {
     this.session.signal({
-      type: 'opentok-editor-operation', 
+      type: 'opentok-editor-operation',
       data: JSON.stringify({
         revision: revision,
         operation: operation,
