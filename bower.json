@@ -21,11 +21,11 @@
     "tests"
   ],
   "dependencies": {
-    "CodeMirror": "git://github.com/marijnh/CodeMirror.git#~4.3.0",
+    "CodeMirror": "git://github.com/marijnh/CodeMirror.git#~5.10",
     "opentok-angular": "~0.2.3"
   },
   "devDependencies": {
-    "ot": "0.0.14",
+    "ot": "0.0.15",
     "angular-mocks": "~1.2.23"
   }
 }
