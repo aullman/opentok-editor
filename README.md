@@ -16,7 +16,7 @@ or clone this repo and include the `opentok-editor.js` or `opentok-editor.min.js
 
 ## Usage
 
-See [demo.html](demo.html)
+See [index.html](index.html). You will need to replace the values for API_KEY, SESSION_ID and TOKEN with values using your [OpenTok](https://www.tokbox.com/opentok) account. Then you can run `npm start` and go to localhost:8080 in your browser.
 
 ## How to Build Yourself
 

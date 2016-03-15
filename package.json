@@ -5,7 +5,8 @@
   "main": "opentok-editor.js",
   "scripts": {
     "test": "node node_modules/karma/bin/karma start karma.conf.js --single-run --browsers Firefox",
-    "postinstall": "./node_modules/gulp/bin/gulp.js"
+    "postinstall": "./node_modules/gulp/bin/gulp.js",
+    "start": "http-server"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
     "gulp-jshint": "^1.8.4",
     "gulp-rename": "^1.2.0",
     "gulp-uglify": "^0.3.1",
+    "http-server": "^0.9.0",
     "karma": "^0.12.22",
     "karma-chrome-launcher": "^0.1.4",
     "karma-coverage": "^0.2.7",
