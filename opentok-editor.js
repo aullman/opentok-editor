@@ -1976,33 +1976,33 @@ var OpenTokAdapter = (function () {
             this.trigger('ack');
           } else {
             this.trigger('operation', wrappedPrime.wrapped.toJSON());
-            this.trigger('cursor', event.from.connectionId, wrappedPrime.meta);
+            this.trigger('selection', event.from.connectionId, wrappedPrime.meta);
           }
       },
-      'signal:opentok-editor-cursor': function (event) {
-        var cursor = JSON.parse(event.data);
-        this.trigger('cursor', event.from.connectionId, cursor);
+      'signal:opentok-editor-selection': function (event) {
+        var selection = JSON.parse(event.data);
+        this.trigger('selection', event.from.connectionId, selection);
       }
     }, this);
   }
 
-  OpenTokAdapter.prototype.sendOperation = function (revision, operation, cursor) {
+  OpenTokAdapter.prototype.sendOperation = function (revision, operation, selection) {
     this.session.signal({
       type: 'opentok-editor-operation',
       data: JSON.stringify({
         revision: revision,
         operation: operation,
-        cursor: cursor
+        selection: selection
       })
     }, function (err) {
       if (err) console.error('Error sending operation', err);
     });
   };
 
-  OpenTokAdapter.prototype.sendCursor = function (cursor) {
+  OpenTokAdapter.prototype.sendSelection = function (selection) {
     this.session.signal({
-      type: 'opentok-editor-cursor',
-      data: JSON.stringify(cursor)
+      type: 'opentok-editor-selection',
+      data: JSON.stringify(selection)
     });
   };
 

@@ -4,7 +4,7 @@ describe('directive: opentok-editor', function () {
     mockMode = 'javascript',
     mockModes = '[{name: \'Javascript\', value: \'javascript\'},' +
       ' {name: \'Markdown\', value: \'markdown\'}]';
-  
+
   beforeEach(function () {
     var oldCodeMirror = window.CodeMirror;
     window.CodeMirror = spyOn(window, 'CodeMirror').and.callFake(function () {
@@ -27,22 +27,22 @@ describe('directive: opentok-editor', function () {
       OTSession = _OTSession_;
     });
   });
-  
+
   beforeEach(inject(function ($rootScope, $compile) {
     scope = $rootScope.$new();
-    
-    element = '<ot-editor modes="' + mockModes + '" value="' + mockValue + '" ' + 
+
+    element = '<ot-editor modes="' + mockModes + '" value="' + mockValue + '" ' +
       'mode="' + mockMode + '"></ot-editor>';
-    
+
       element = $compile(element)(scope);
       scope.$digest();
   }));
-  
+
   it('should add event listeners to session and check if its connected', function () {
     expect(session.on).toHaveBeenCalled();
     expect(session.isConnected).toHaveBeenCalled();
   });
-  
+
   it('should setup the isolate scope correctly', function () {
     expect(element.isolateScope().connecting).toBe(true);
     expect(element.isolateScope().selectedMode).toEqual({
@@ -50,17 +50,17 @@ describe('directive: opentok-editor', function () {
       value: 'javascript'
     });
   });
-  
+
   it('should create a selector with the right data', function () {
     expect(element.find('select').children().length).toBe(2);
     expect(element.find('option')[0].innerHTML).toBe('Javascript');
     expect($(element.find('option')[0]).attr('selected')).toBe('selected');
     expect(element.find('option')[1].innerHTML).toBe('Markdown');
   });
-  
+
   it('should create a CodeMirror and signal:opentok-editor-request-doc when connected', function (done) {
     session.trigger('sessionConnected');
-    
+
     setTimeout(function () {
       expect(window.CodeMirror).toHaveBeenCalledWith(jasmine.any(Object), jasmine.objectContaining({
         value: mockValue,
@@ -72,7 +72,7 @@ describe('directive: opentok-editor', function () {
       done();
     }, 10);
   });
-  
+
   describe('connected and document initialised', function () {
     var adapter;
     beforeEach(function (done) {
@@ -92,7 +92,7 @@ describe('directive: opentok-editor', function () {
         done();
       }, 10);
     });
-    
+
     it('has initialised the document', function () {
       expect(OpenTokAdapter).toHaveBeenCalledWith(session, 0, mockValue, []);
       expect(element.isolateScope().connecting).toBe(false);
@@ -100,7 +100,7 @@ describe('directive: opentok-editor', function () {
       expect(element.find('.CodeMirror-code').length).toBe(1);
       expect(myCodeMirror.getValue()).toBe(mockValue);
     });
-    
+
     it('signals the opentok-editor-doc state when it receives a request', function (done) {
       var mockConnection = {
         connectionId: 'mockConnectionId'
@@ -124,7 +124,7 @@ describe('directive: opentok-editor', function () {
         done();
       }, 10);
     });
-    
+
     it('handles a single operation correctly', function (done) {
       var mockSignalEvent = {
         data: JSON.stringify({
@@ -143,7 +143,7 @@ describe('directive: opentok-editor', function () {
         done();
       }, 10);
     });
-    
+
     it('handles 2 simultaneous operations correctly', function (done) {
       var mockSignalEvent1 = {
         data: JSON.stringify({
@@ -172,7 +172,8 @@ describe('directive: opentok-editor', function () {
       setTimeout(function () {
         expect(myCodeMirror.getValue()).toEqual(mockValue + '1234' + '5678');
         done();
-      }, 10);
+      }, 20);
     });
+
   });
 });

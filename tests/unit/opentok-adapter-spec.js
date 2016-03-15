@@ -13,7 +13,7 @@ describe('OpenTokAdapter', function () {
     it('has the right properties', function () {
       expect(adapter.registerCallbacks).toBeDefined();
       expect(adapter.sendOperation).toBeDefined();
-      expect(adapter.sendCursor).toBeDefined();
+      expect(adapter.sendSelection).toBeDefined();
       expect(adapter.trigger).toBeDefined();
     });
 
@@ -39,20 +39,20 @@ describe('OpenTokAdapter', function () {
     it('calls signal with the right parameters', function () {
       var revision = 2,
         operation = '123',
-        cursor = 2;
-      adapter.sendOperation(revision, operation, cursor);
+        selection = 2;
+      adapter.sendOperation(revision, operation, selection);
       expect(session.signal).toHaveBeenCalledWith({
-        type: 'opentok-editor-operation', 
+        type: 'opentok-editor-operation',
         data: JSON.stringify({
           revision: revision,
           operation: operation,
-          cursor: cursor
+          selection: selection
         })
       }, jasmine.any(Function));
     });
   });
-  
-  describe('sendCursor', function () {
+
+  describe('sendSelection', function () {
     var session,
       adapter;
     beforeEach(function () {
@@ -61,15 +61,15 @@ describe('OpenTokAdapter', function () {
     });
 
     it('calls signal with the right parameters', function () {
-      var cursor = 2;
-      adapter.sendCursor(cursor);
+      var selection = 2;
+      adapter.sendSelection(selection);
       expect(session.signal).toHaveBeenCalledWith({
-        type: 'opentok-editor-cursor',
-        data: JSON.stringify(cursor)
+        type: 'opentok-editor-selection',
+        data: JSON.stringify(selection)
       });
     });
   });
-  
+
   describe('signal event handlers', function () {
     var session,
       adapter;
@@ -126,21 +126,21 @@ describe('OpenTokAdapter', function () {
       session.trigger('signal:opentok-editor-operation', mockSignalEvent);
     });
 
-    it('triggers cursor on signal:opentok-editor-cursor', function (done) {
-      var mockCursor = {
+    it('triggers selection on signal:opentok-editor-selection', function (done) {
+      var mockSelection = {
           position:19,
           selection:[]
         },
         mockSignalEvent = {
-          data: JSON.stringify(mockCursor),
+          data: JSON.stringify(mockSelection),
           from: {connectionId: 'mockConnectionId'}
         };
-      adapter.on('cursor', function (connectionId, cursor) {
+      adapter.on('selection', function (connectionId, selection) {
         expect(connectionId).toEqual('mockConnectionId');
-        expect(cursor).toEqual(mockCursor);
+        expect(selection).toEqual(mockSelection);
         done();
       });
-      session.trigger('signal:opentok-editor-cursor', mockSignalEvent);
+      session.trigger('signal:opentok-editor-selection', mockSignalEvent);
     });
   });
 });
