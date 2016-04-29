@@ -4,7 +4,7 @@
 
 # opentok-editor
 
-A real time collaborative editor for OpenTok using CodeMirror and ot.js
+A real time collaborative editor for OpenTok using CodeMirror and ot.js. More information in [this blog article](http://www.tokbox.com/blog/collaborative-editor/).
 
 ## Installation
 
