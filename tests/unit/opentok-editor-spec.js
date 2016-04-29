@@ -148,22 +148,14 @@ describe('directive: opentok-editor', function () {
       var mockSignalEvent1 = {
         data: JSON.stringify({
           revision:0,
-          operation:[18, "1234"],
-          cursor: {
-            position:19,
-            selection:[]
-          }
+          operation:[18, "1234"]
         }),
         from: {connectionId: 'mockConnectionId'}
       };
       var mockSignalEvent2 = {
         data: JSON.stringify({
           revision:0,
-          operation:[18, "5678"],
-          cursor: {
-            position:19,
-            selection:[]
-          }
+          operation:[18, "5678"]
         }),
         from: {connectionId: 'mockConnectionId2'}
       };
@@ -171,6 +163,29 @@ describe('directive: opentok-editor', function () {
       session.trigger('signal:opentok-editor-operation', mockSignalEvent1);
       setTimeout(function () {
         expect(myCodeMirror.getValue()).toEqual(mockValue + '1234' + '5678');
+        done();
+      }, 20);
+    });
+
+    it('handles 2 simultaneous deletions correctly', function (done) {
+      var mockSignalEvent1 = {
+        data: JSON.stringify({
+          revision:0,
+          operation:[17, -2]
+        }),
+        from: {connectionId: 'mockConnectionId'}
+      };
+      var mockSignalEvent2 = {
+        data: JSON.stringify({
+          revision:0,
+          operation:[17, -1]
+        }),
+        from: {connectionId: 'mockConnectionId2'}
+      };
+      session.trigger('signal:opentok-editor-operation', mockSignalEvent2);
+      session.trigger('signal:opentok-editor-operation', mockSignalEvent1);
+      setTimeout(function () {
+        expect(myCodeMirror.getValue()).toEqual(mockValue.substr(0, mockValue.length-2));
         done();
       }, 20);
     });
