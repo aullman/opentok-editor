@@ -1,3 +1,25 @@
+var ng, opTrans;
+if (typeof angular === 'undefined' && typeof require !== 'undefined') {
+  ng = require('angular');
+} else {
+  ng = angular;
+}
+if (typeof ot === 'undefined' && typeof require !== 'undefined') {
+  // fixme: We have to make this a global because CodeMirrorAdapter and EditorClient
+  // attach themselves to the global ot
+  window.ot = require('ot');
+  ot.UndoManager = require('ot/lib/undo-manager.js');
+  ot.WrappedOperation = require('ot/lib/wrapped-operation.js');
+  require('ot/lib/codemirror-adapter.js');
+  require('ot/lib/editor-client.js');
+
+  window.OpenTokAdapter = require('./opentok-adapter.js');
+}
+
+if (typeof window.CodeMirror === 'undefined') {
+  window.CodeMirror = require('codemirror');
+}
+
 (function () {
   // Turns the Array of operation Objects into an Array of JSON stringifyable objects
   var serialiseOps = function (operations) {
@@ -18,7 +40,7 @@
     });
   };
 
-  angular.module('opentok-editor', ['opentok'])
+  ng.module('opentok-editor', ['opentok'])
   .directive('otEditor', ['OTSession', '$window', function (OTSession, $window) {
     return {
       restrict: 'E',
@@ -39,6 +61,12 @@
             initialised = false,
             session = OTSession.session,
             otAdapter;
+        if (typeof require !== 'undefined') {
+          // Require all of the modes
+          scope.modes.forEach(function(mode) {
+            require('codemirror/mode/' + mode.value + '/' + mode.value + '.js');
+          });
+        }
         scope.connecting = true;
         var selectedMode = scope.modes.filter(function (value) {return value.value === attrs.mode;});
         scope.selectedMode = selectedMode.length > 0 ? selectedMode[0] : scope.modes[0];

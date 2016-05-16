@@ -881,7 +881,7 @@ ot.Client = (function (global) {
     this.revision++;
     this.setState(this.state.serverAck(this));
   };
-  
+
   Client.prototype.serverReconnect = function () {
     if (typeof this.state.resend === 'function') { this.state.resend(this); }
   };
@@ -1932,6 +1932,13 @@ ot.Server = (function (global) {
 if (typeof module === 'object') {
   module.exports = ot.Server;
 }
+var opTrans;
+if (typeof ot === 'undefined' && typeof require !== 'undefined') {
+  opTrans = require('ot');
+} else {
+  opTrans = ot;
+}
+
 var OpenTokAdapter = (function () {
   'use strict';
 
@@ -1949,7 +1956,7 @@ var OpenTokAdapter = (function () {
       this.operations = operations ? operations : [];
     }
     // We pretend to be a server
-    var server = new ot.Server(doc, this.operations);
+    var server = new opTrans.Server(doc, this.operations);
 
     this.session.on({
       connectionDestroyed: function (event) {
@@ -1963,9 +1970,9 @@ var OpenTokAdapter = (function () {
       'signal:opentok-editor-operation': function (event) {
         var data = JSON.parse(event.data),
           wrapped;
-          wrapped = new ot.WrappedOperation(
-            ot.TextOperation.fromJSON(data.operation),
-            data.selection && ot.Selection.fromJSON(data.selection)
+          wrapped = new opTrans.WrappedOperation(
+            opTrans.TextOperation.fromJSON(data.operation),
+            data.selection && opTrans.Selection.fromJSON(data.selection)
           );
           // Might need to try catch here and if it fails wait a little while and
           // try again. This way if we receive operations out of order we might
@@ -2010,6 +2017,32 @@ var OpenTokAdapter = (function () {
 
 }());
 
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = OpenTokAdapter;
+}
+
+var ng, opTrans;
+if (typeof angular === 'undefined' && typeof require !== 'undefined') {
+  ng = require('angular');
+} else {
+  ng = angular;
+}
+if (typeof ot === 'undefined' && typeof require !== 'undefined') {
+  // fixme: We have to make this a global because CodeMirrorAdapter and EditorClient
+  // attach themselves to the global ot
+  window.ot = require('ot');
+  ot.UndoManager = require('ot/lib/undo-manager.js');
+  ot.WrappedOperation = require('ot/lib/wrapped-operation.js');
+  require('ot/lib/codemirror-adapter.js');
+  require('ot/lib/editor-client.js');
+
+  window.OpenTokAdapter = require('./opentok-adapter.js');
+}
+
+if (typeof window.CodeMirror === 'undefined') {
+  window.CodeMirror = require('codemirror');
+}
+
 (function () {
   // Turns the Array of operation Objects into an Array of JSON stringifyable objects
   var serialiseOps = function (operations) {
@@ -2030,7 +2063,7 @@ var OpenTokAdapter = (function () {
     });
   };
 
-  angular.module('opentok-editor', ['opentok'])
+  ng.module('opentok-editor', ['opentok'])
   .directive('otEditor', ['OTSession', '$window', function (OTSession, $window) {
     return {
       restrict: 'E',
@@ -2051,6 +2084,12 @@ var OpenTokAdapter = (function () {
             initialised = false,
             session = OTSession.session,
             otAdapter;
+        if (typeof require !== 'undefined') {
+          // Require all of the modes
+          scope.modes.forEach(function(mode) {
+            require('codemirror/mode/' + mode.value + '/' + mode.value + '.js');
+          });
+        }
         scope.connecting = true;
         var selectedMode = scope.modes.filter(function (value) {return value.value === attrs.mode;});
         scope.selectedMode = selectedMode.length > 0 ? selectedMode[0] : scope.modes[0];
