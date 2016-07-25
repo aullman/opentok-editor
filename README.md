@@ -8,7 +8,16 @@ A real time collaborative editor for OpenTok using CodeMirror and ot.js. More in
 
 ## Installation
 
-You can either use [Bower](http://bower.io/):
+### npm with webpack or browserify:
+
+`npm install opentok-editor`
+
+```js
+require('opentok-editor');
+require('opentok-editor/opentok-editor.css');
+```
+
+### [Bower](http://bower.io/):
 
 `bower install opentok-editor`
 
