@@ -1,3 +1,10 @@
+var opTrans;
+if (typeof ot === 'undefined' && typeof require !== 'undefined') {
+  opTrans = require('ot');
+} else {
+  opTrans = ot;
+}
+
 var OpenTokAdapter = (function () {
   'use strict';
 
@@ -15,7 +22,7 @@ var OpenTokAdapter = (function () {
       this.operations = operations ? operations : [];
     }
     // We pretend to be a server
-    var server = new ot.Server(doc, this.operations);
+    var server = new opTrans.Server(doc, this.operations);
 
     this.session.on({
       connectionDestroyed: function (event) {
@@ -29,9 +36,9 @@ var OpenTokAdapter = (function () {
       'signal:opentok-editor-operation': function (event) {
         var data = JSON.parse(event.data),
           wrapped;
-          wrapped = new ot.WrappedOperation(
-            ot.TextOperation.fromJSON(data.operation),
-            data.selection && ot.Selection.fromJSON(data.selection)
+          wrapped = new opTrans.WrappedOperation(
+            opTrans.TextOperation.fromJSON(data.operation),
+            data.selection && opTrans.Selection.fromJSON(data.selection)
           );
           // Might need to try catch here and if it fails wait a little while and
           // try again. This way if we receive operations out of order we might
@@ -75,3 +82,7 @@ var OpenTokAdapter = (function () {
   return OpenTokAdapter;
 
 }());
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = OpenTokAdapter;
+}
