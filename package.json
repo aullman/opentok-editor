@@ -42,6 +42,6 @@
   "dependencies": {
     "angular": "^1.5.5",
     "codemirror": "^5.14.2",
-    "ot": "0.0.15"
+    "ot": "git://github.com/aullman/ot.js.git#master"
   }
 }
