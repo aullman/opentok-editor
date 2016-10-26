@@ -1,6 +1,6 @@
 {
   "name": "opentok-editor",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A real time collaborative editor for OpenTok using CodeMirror and ot.js",
   "main": "src/opentok-editor.js",
   "scripts": {
